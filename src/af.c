@@ -23,18 +23,6 @@
 #include <unistd.h>
 extern ETYMON_AF_STATE *etymon_af_state[];
 
-#ifdef ETYMON_AF_GSOAP
-#include "soapH.h"
-struct Namespace namespaces[] = {
-	{ "SOAP-ENV", "http://schemas.xmlsoap.org/soap/envelope/" },
-	{ "SOAP-ENC", "http://schemas.xmlsoap.org/soap/encoding/" },
-	{ "xsi", "http://www.w3.org/2001/XMLSchema-instance", "http://www.w3.org/*/XMLSchema-instance" },
-	{ "xsd", "http://www.w3.org/2001/XMLSchema", "http://www.w3.org/*/XMLSchema" },
-	{ "SRW", "http://www.loc.gov/zing/srw/" },
-	{ NULL, NULL }
-};
-#endif
-
 #define MAX_DBS (256)
 #define MEMORYMIN (3)
 
@@ -900,66 +888,6 @@ static int exec_scan()
 	return 0;
 }
 
-#ifdef ETYMON_AF_GSOAP
-static int exec_client()
-{
-	struct soap *soap;
-	char target[1024];
-	char *s;
-	char *srq_query;
-	struct SRW__searchRetrieveResponse srs;
-	int x;
-
-	soap =  soap_new();
-/*	printf("(Connecting to host `%s' on port %s)\n", host, port); */
-	strcpy(target, "http://");
-	strcat(target, host);
-	strcat(target, ":");
-	strcat(target, port);
-	strcat(target, "/");
-	if (dbname[0])
-		strcat(target, dbname[0]);
-
-
-/*
-	if (soap_call_SRW__test(soap, target, "", &s)) {
-		soap_print_fault(soap, stderr);
-		soap_print_fault_location(soap, stderr);
-	} else {
-		printf("Connected.\nReturn string: \"%s\"\n", s);
-	}
-*/
-
-	srq_query = search_query_boolean;
-	if (soap_call_SRW__searchRetrieveRequest(soap, target, "", "1.1", srq_query, &srs)) {
-		soap_print_fault(soap, stderr);
-		soap_print_fault_location(soap, stderr);
-	} else {
-		if (search_totalhits)
-			printf("%d\n", srs.SRW__numberOfRecords);
-/*		else
-			printf("(Result output not yet working; use
-			--totalhits to see number of results.)\n"); */
-		for (x = 0; x < srs.SRW__numberOfRecords; x++)
-			printf("%s\n", srs.SRW__records.__ptrSRW__record[x].SRW__recordData);
-
-/*		printf("[%s], [%s]\n",
- * srs.SRW__records.__ptrSRW__record[0].SRW__recordData,
- * srs.SRW__records.__ptrSRW__record[1].SRW__recordData); */
-		
-	}
-
-/*	soap_dealloc(soap, s); */
-	soap_dealloc(soap, srs.SRW__records.__ptrSRW__record[0].SRW__recordData);
-	soap_dealloc(soap, srs.SRW__records.__ptrSRW__record[1].SRW__recordData);
-	soap_dealloc(soap, srs.SRW__records.__ptrSRW__record);
-	soap_destroy(soap);
-	soap_end(soap);
-	free(soap);
-	return 0;
-}
-#endif
-
 static int validate_opt_cmd()
 {
 	if ( (!cmd_index) &&
@@ -1064,11 +992,6 @@ int afmain(int argc, char *argv[])
 	if (validate_opt() < 0)
 		exit(-1);
 
-#ifdef ETYMON_AF_GSOAP
-	if (*host != '\0')
-		return exec_client();
-#endif
-	
 	if (cmd_index)
 		return exec_index();
 	if (cmd_linearize)

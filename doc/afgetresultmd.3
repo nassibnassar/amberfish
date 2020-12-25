@@ -1,0 +1,80 @@
+.TH AFGETRESULTMD 3 "" "" "Amberfish"
+
+.SH NAME
+
+afgetresultmd \- get metadata associated with search results
+
+.SH SYNOPSIS
+
+.B #include "af.h"
+
+.B int afgetresultmd(const Afresult *result, int resultn, Afresultmd *resultmd);
+
+.SH DESCRIPTION
+
+The
+.B afgetresultmd
+function retrieves additional metadata about results returned from
+.BR afsearch (3).
+
+The argument
+.I result
+specifies the array of results.
+
+The argument
+.I resultn
+specifies the number of elements in
+.IR result .
+
+The argument
+.I resultmd
+specifies an array with the same number of elements as
+.IR result ,
+to be filled in by this function.
+
+.SH RETURN VALUE
+
+This function returns 0 if it exited normally.  If an error occurred,
+it returns -1 and
+.I aferrno
+is set.
+
+If the function exited normally, the array
+.I resultmd
+is filled in.  Each element of
+.I resultmd
+consists of the following:
+
+.nf
+typedef struct {
+	Uint4 parent;
+	char docpath[AFPATHSIZE];
+	off_t begin;
+	off_t end;
+} Afresultmd;
+.fi
+
+The
+.I parent
+is the document identifier of this document's parent.  When this is
+used, it is usually a container, for example, an outer XML element.
+If it is unused, it is set to 0.
+
+The
+.I docpath
+is the path name of the file containing the document.
+
+The
+.I begin
+and
+.I end
+values are offsets delimiting the starting and ending points of the
+document within the file
+.IR docpath .
+The
+.I end
+offset points one character past the end of the document.
+
+.SH ERRORS
+
+This function returns only "core" errors.

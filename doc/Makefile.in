@@ -1,0 +1,58 @@
+prefix =	@prefix@
+exec_prefix =	@exec_prefix@
+MANDIR =	${DESTDIR}@mandir@
+MAN1 =		af.1.gz
+MAN3 =		afopen.3.gz afclose.3.gz afsearch.3.gz afsortscore.3.gz \
+		afsortdocid.3.gz afgetresultmd.3.gz
+
+all: man
+
+man: ${MAN1} ${MAN3}
+
+html: html/index.html
+
+pdf: amberfish.pdf
+
+html/index.html: amberfish.texi version.texi
+	makeinfo --force --html -I. amberfish.texi -o html
+
+amberfish.pdf: amberfish.texi version.texi
+	texi2dvi --pdf amberfish.texi
+
+%.1.gz: %.1
+	gzip -c -9 $< > $@
+
+%.3.gz: %.3
+	gzip -c -9 $< > $@
+
+install: all
+	chmod a+r ${MAN1} ${MAN3}
+	if [ -f ${MANDIR}/man1/af.1 ] ; then \
+		rm -f ${MANDIR}/man1/af.1 ; \
+        fi
+	mkdir -p ${MANDIR}/man1
+	cp ${MAN1} ${MANDIR}/man1/.
+	mkdir -p ${MANDIR}/man3
+	cp ${MAN3} ${MANDIR}/man3/.
+
+uninstall:
+	if [ -d ${MANDIR}/man1 ] ; then \
+		cd ${MANDIR}/man1 ; \
+		rm -f ${MAN1} ; \
+	fi
+	if [ -d ${MANDIR}/man3 ] ; then \
+		cd ${MANDIR}/man3 ; \
+		rm -f ${MAN3} ; \
+	fi
+
+clean:
+	rm -f ${MAN1} ${MAN3} html/*.html \
+		amberfish.aux amberfish.cp amberfish.cps amberfish.fn \
+		amberfish.fns amberfish.ky amberfish.log amberfish.pg \
+		amberfish.tmp amberfish.toc amberfish.tp amberfish.vr \
+		amberfish.vrs amberfish.pdf
+
+distclean:
+	${MAKE} clean
+	rm -fr html
+	rm -f *~ *#

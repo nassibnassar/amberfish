@@ -1,0 +1,95 @@
+.TH AFOPEN 3 "" "" "Amberfish"
+
+.SH NAME
+
+afopen \- open a database
+
+.SH SYNOPSIS
+
+.B #include "af.h"
+
+.B int afopen(const Afopen *r, Afopen_r *rr);
+
+.SH DESCRIPTION
+
+The
+.B afopen
+function opens a database so that it can be accessed for searching,
+updating, etc.
+
+The argument
+.I r
+specifies a set of options defined by the following structure:
+
+.nf
+typedef struct {
+	char *dbpath;
+	char *mode;
+	int phrase;
+	int stem;
+} Afopen;
+.fi
+
+The
+.I dbpath
+option specifies the database to be opened, consisting of a path name.
+The file names that make up the database are constructed by appending
+suffixes to this path name.
+
+The
+.I mode
+option specifies how the database will be accessed:
+
+.TP
+.B r
+Open database for reading.  This opens the database files for
+searching or other read-only access.
+
+.TP
+.B r+
+Open database for reading and writing.  This is commonly used to add
+to or modify an existing database.
+
+.TP
+.B w+
+Open database for reading and writing; the database is created if it
+does not exist, and otherwise its contents are erased.
+
+.SH RETURN VALUE
+
+This function returns 0 if it exited normally.  If an error occurred,
+it returns -1 and
+.I aferrno
+is set.
+
+If the function exited normally, the structure pointed to by
+.I rr
+is filled in with the following values:
+
+.nf
+typedef struct {
+	Uint2 dbid;
+} Afopen_r;
+.fi
+
+The
+.I dbid
+value is a database descriptor that can be used to refer to the
+database while it remains open.
+
+.SH ERRORS
+
+In addition to the set of "core" errors, this function can return:
+
+.TP
+.B AFEDBLOCK
+The database is locked.
+
+.TP
+.B AFEOPENLIM
+Too many open databases.
+
+.TP
+.B AFEVERSION
+The database was created with an earlier, incompatible version of this
+library.

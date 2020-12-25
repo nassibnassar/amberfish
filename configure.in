@@ -1,0 +1,140 @@
+AC_INIT()
+
+USER_CPPFLAGS=$CPPFLAGS
+USER_LDFLAGS=$LDFLAGS
+CPPFLAGS="-I/usr/local/include $CPPFLAGS"
+LDFLAGS="-L/usr/local/lib $LDFLAGS"
+
+AC_MSG_CHECKING(for VERSION)
+if test -f VERSION; then
+	af_version=`cat VERSION`
+	AC_MSG_RESULT($af_version)
+else
+	af_version=`date +%Y%m%d`
+	AC_MSG_RESULT(no; using $af_version)
+fi
+
+AC_PROG_CC
+AC_PROG_CXX
+
+AC_CHECK_FUNC(getopt_long, , AC_CHECK_LIB(iberty, getopt_long))
+
+AC_CHECK_SIZEOF(short int, 0)
+AC_CHECK_SIZEOF(int, 0)
+AC_CHECK_SIZEOF(long int, 0)
+
+xml=yes
+AC_ARG_ENABLE(xml, [  --disable-xml           disable linking with Xerces and XML support], [
+	if test "$enableval" = "no"; then
+		xml=no
+	fi
+] )
+AC_MSG_CHECKING(whether xml is enabled)
+if test "$xml" = "yes"; then
+	AC_MSG_RESULT(yes)
+	AC_CHECK_LIB(xerces-c, main, [
+			xmllib=yes
+			LIBS="-lxerces-c $LIBS"
+			AC_DEFINE(HAVE_LIBXERCES_C)
+		], 
+		xmllib=no)
+	AC_CHECK_HEADERS([xercesc/util/XercesVersion.hpp], xmlinc=yes, xmlinc=no)
+else
+	AC_MSG_RESULT(no)
+fi
+xmlon=no
+if test "$xmllib" = "yes"; then
+	if test "$xmlinc" = "yes"; then
+		xmlon=yes
+		AC_DEFINE(ETYMON_AF_XML)
+	fi
+fi
+
+gsoap=yes
+AC_ARG_ENABLE(gsoap, [  --disable-gsoap           disable linking with gSOAP and web services support], [
+	if test "$enableval" = "no"; then
+		gsoap=no
+	fi
+] )
+AC_MSG_CHECKING(whether gsoap is enabled)
+if test "$gsoap" = "yes"; then
+	AC_MSG_RESULT(yes)
+	AC_CHECK_LIB(gsoap++, main, [
+			gsoaplib=yes
+			libgsoap="-lgsoap++"
+			bin="afd $bin"
+			gsoapinc='-include $(GSOAPOBJ:.o=.d)'
+			AC_DEFINE(HAVE_LIBXERCES_C)
+		], 
+		gsoaplib=no)
+	AC_CHECK_PROG(gsoapcpp, soapcpp2, yes, no)
+else
+	AC_MSG_RESULT(no)
+fi
+gsoapon=no
+if test "$gsoaplib" = "yes"; then
+	if test "$gsoapcpp" = "yes"; then
+		gsoapon=yes
+		AC_DEFINE(ETYMON_AF_GSOAP)
+		gsoapclient='${GSOAPCL}'
+		gsoapobj='${GSOAPO}'
+	fi
+fi
+
+stemmer=no
+rm -f src/stem.d
+AC_MSG_CHECKING(for stemmer)
+if test -f src/porter.cc; then
+	stemmer=yes
+	AC_DEFINE(HAVE_STEMMER)
+fi
+AC_MSG_RESULT($stemmer)
+
+AC_MSG_NOTICE(creating src/version.h)
+echo "#define AF_VERSION \"$af_version\"" > src/version.h
+AC_MSG_NOTICE(creating doc/version.texi)
+echo "@set VERSION $af_version" > doc/version.texi
+
+AC_CONFIG_HEADER(src/config.h)
+AC_CONFIG_FILES(src/Makefile)
+AC_CONFIG_FILES(doc/Makefile)
+
+AC_SUBST(LIBGSOAP, $libgsoap)
+AC_SUBST(GSOAPCLIENT, $gsoapclient)
+AC_SUBST(BIN, $bin)
+AC_SUBST(GSOAPOBJ, $gsoapobj)
+AC_SUBST(GSOAPINC, $gsoapinc)
+
+AC_OUTPUT()
+if test "$gsoap" = "yes"; then
+	echo ""
+	echo "creating gSOAP stubs"
+	cd src; soapcpp2 afw.h
+fi
+
+echo ""
+echo "User options"
+echo "------------"
+echo "Install prefix                : $prefix"
+echo "CPPFLAGS                      : $USER_CPPFLAGS"
+echo "LDFLAGS                       : $USER_LDFLAGS"
+echo "Enable XML                    : $xml"
+echo "Enable gSOAP                  : $gsoap"
+echo ""
+echo "Configure results"
+echo "-----------------"
+echo "Amberfish version             : $af_version"
+echo "C compiler                    : $CC"
+echo "C++ compiler                  : $CXX"
+if test "$xml" = "yes"; then
+	echo "Xerces-C library found        : $xmllib"
+	echo "Xerces-C headers found        : $xmlinc"
+fi
+echo "XML support enabled           : $xmlon"
+if test "$gsoap" = "yes"; then
+	echo "gSOAP soapcpp2 found          : $gsoapcpp"
+	echo "gSOAP library found           : $gsoaplib"
+fi
+echo "Web services support enabled  : $gsoapon"
+echo "Stemmer enabled               : $stemmer"
+echo ""

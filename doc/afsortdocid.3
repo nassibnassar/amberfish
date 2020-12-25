@@ -1,0 +1,39 @@
+.TH AFSORTDOCID 3 "" "" "Amberfish"
+
+.SH NAME
+
+afsortdocid \- sort search results by document identifier
+
+.SH SYNOPSIS
+
+.B #include "af.h"
+
+.B int afsortdocid(Afresult *result, int resultn);
+
+.SH DESCRIPTION
+
+The
+.B afsortdocid
+function sorts results returned from 
+.BR afsearch (3),
+ordering them by document identifier.
+
+The argument
+.I result
+specifies the array of results to be sorted.
+
+The argument
+.I resultn
+specifies the number of elements in
+.IR result .
+
+.SH RETURN VALUE
+
+This function returns 0 if it exited normally.  If an error occurred, it
+returns -1 and
+.I aferrno
+is set.
+
+.SH ERRORS
+
+This function returns only "core" errors.

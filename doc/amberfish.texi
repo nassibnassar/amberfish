@@ -1,0 +1,909 @@
+%
+%  Copyright (C) 1999-2004 Etymon Systems, Inc.  All Rights Reserved.
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pdfpagewidth 8.5in
+\pdfpageheight 11in
+
+\pdfcompresslevel 9
+
+\pdfinfo {
+/Title (Amberfish User's Guide)
+/Author (Nassib Nassar)
+/Subject (Amberfish)
+/Keywords (Etymon Amberfish text search index retrieval information manual guide)
+}
+
+\pdfcatalog {
+/URI (http://www.etymon.com/)
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input texinfo
+@c %**start of header
+@setfilename af-users-guide.info
+@settitle Amberfish User's Guide
+@setchapternewpage odd
+@c   @paragraphindent 0
+@c %**end of header
+
+@syncodeindex pg cp
+
+@dircategory Etymon
+@direntry
+* Amberfish: (af-users-guide).      Amberfish User's Guide.
+@end direntry
+
+@finalout
+
+@include version.texi
+
+@macro afcopyright{year}
+@emph{Copyright} @copyright{} @emph{1999--2004 by Etymon Systems, Inc.}
+@end macro
+
+@macro spsection{}
+@sp 3
+@end macro
+
+@macro permission{}
+
+@ 
+
+@sp 4
+
+This document describes Amberfish Version @value{VERSION}.  Updates
+and information are available from the Etymon web site at
+@url{http://www.etymon.com/}.
+
+@vskip 0pt plus 1filll
+
+@afcopyright{}
+
+@sp 1
+
+@emph{AMBERFISH is a registered trademark of Etymon Systems, Inc.
+ETYMON is a registered trademark and a registered service mark of
+Etymon Systems, Inc.  UNIX is a registered trademark of The Open
+Group.  All other trademarks are the property of their respective
+owners.}
+
+@sp 1
+
+@emph{Etymon Systems, Inc.@: disclaims all warranties, either express or
+implied, including but not limited to implied warranties of
+merchantability, fitness for a particular purpose, and noninfringement
+of third-party rights, and all other remedies for breach of the above
+warranty.  Etymon Systems, Inc.@: assumes no liability with respect to
+the accuracy, adequacy, quality, and reliability of this publication.}
+
+@end macro
+
+@ifinfo
+This is a user's guide to Amberfish.
+
+@afcopyright{}
+
+@permission{}
+
+@dedication{}
+
+@end ifinfo
+
+@titlepage
+
+@title The Amberfish Text Retrieval System
+@c @subtitle Version @value{VERSION}
+@author Nassib Nassar @emph{@ Etymon Systems, Inc.}
+@page
+@permission{}
+@page
+
+@ifnothtml
+@contents
+@end ifnothtml
+
+@ifnottex
+@node Top, Tutorial, (dir), (dir)
+@top Amberfish User's Guide
+Version @value{VERSION}
+@sp 1
+@afcopyright{}  All rights reserved.
+@sp 1
+@end ifnottex
+
+
+@end titlepage
+
+
+@node Top, Tutorial, (dir), (dir)
+@top Preface
+
+@noindent
+@sc{This} document serves as an introduction to the Amberfish text
+retrieval system.  It is intended for both beginning UNIX users and
+professional system administrators.  Amberfish is text-based software
+and does not currently have a graphical user interface, although it is
+hoped that the tools provided will be easy to integrate into existing
+systems.  Except where otherwise noted, a UNIX platform is assumed.
+
+
+@menu
+* Tutorial::     
+@end menu
+
+
+@iftex
+@headings off
+@oddheading  @| @thischaptername @| @thispage
+@evenheading @thispage @| @thischaptername @|
+@end iftex
+
+
+@node Tutorial, (dir), Top, Top
+@chapter Tutorial
+@cindex Tutorial
+
+@menu
+* Introduction::          
+* Indexing::          
+* Searching::                
+* Right truncation::                
+* Phrases::                
+* Multiple documents in a file::                
+* Fields::                
+* Fields and XML::                
+* Relevance ranking::                
+* Multiple databases::                
+* Listing database information::                
+* More about XML::                 
+@end menu
+
+
+@spsection{}
+@node Introduction, Indexing, Tutorial, Tutorial
+@section Introduction
+
+The easiest way to understand how to use Amberfish is to index
+and search a small group of text files.
+
+@cindex Creating a database
+@cindex Indexing
+@cindex Searching
+@pindex af
+The process of @dfn{indexing} creates a set of files that collectively
+are referred to in this document as a @dfn{database}.  Once the
+database has been created, the original text can be searched via the
+database.  The @command{af} tool performs both of these tasks as well
+as others.
+
+@spsection{}
+@node Indexing, Searching, Introduction, Tutorial
+@section Indexing
+@cindex Indexing
+
+Here is a simple indexing command (@samp{$} is the UNIX prompt):
+
+@pindex af
+@pindex af, -i
+@pindex af, -d
+@pindex af, -C
+@pindex af, -v
+@example
+$ af -i -d mydb -C -v *.txt
+@end example
+
+@cindex Database name
+@cindex Creating a database
+@cindex Adding files to a database
+@cindex Indexing
+@noindent
+The @option{-i} option indicates that we want to index files, and the
+list of files is expected to be at the end of the line (@file{*.txt}).
+The @option{-d} option specifies the database name, in this case,
+@file{mydb}.  The @option{-C} option indicates that we want to create
+a new database (overwriting any existing database called @file{mydb}).
+Finally, the @option{-v} option tells @command{af} to print
+information about the indexing process as it goes along.  (Another
+option, @option{-m}, may be added to increase the amount of memory
+used for indexing, which will generally reduce indexing time.)
+
+@ignore
+
+The above example may alternatively be entered as two separate commands:
+
+@pindex af
+@pindex af, -i
+@pindex af, -d
+@pindex af, -C
+@pindex af, -v
+@example
+$ af -i -d mydb -C --no-linear
+$ af -i -d mydb -v *.txt
+@end example
+
+@cindex Creating a database
+@cindex Adding files to a database
+@cindex Indexing
+@noindent
+In this case the first invocation of @command{af} creates the new
+database, and the second indexes the files, @file{*.txt}.
+
+@end ignore
+
+The indexing process creates a group of files beginning with
+@file{mydb} (i.e.@: @file{mydb.db}, @file{mydb.dt}, and several
+others).  These are the index files that make up the database.  We can
+use the @command{af} tool with this database to search the files we
+have indexed.
+
+@cindex Linearizing a database
+@cartouche
+@noindent
+@emph{Note:} As an optional step after indexing, the database can be
+@w{@dfn{linearized}}.  In the example above, this would be done with
+the command, @command{af -L -d mydb}.  Linearizing improves search
+time but has the disadvantage of being a very slow process.  Another
+disadvantage is that it fixes the database so that no more documents
+can be added.
+@end cartouche
+
+@ignore
+
+@cindex Options, command tools
+@pindex af
+If you type @command{af} by itself, you will see a list of all the
+options it supports:
+
+@example
+$ af
+@end example
+
+@noindent
+
+@end ignore
+
+
+@spsection{}
+@node Searching, Right truncation, Indexing, Tutorial
+@section Searching
+@cindex Searching
+
+Here is a simple searching command:
+
+@pindex af
+@pindex af, -d
+@pindex af, -Q
+@example
+$ af -s -d mydb -Q 'cat & (dog | mouse)'
+@end example
+
+@cindex Query, search
+@cindex Boolean expressions
+@pindex and
+@pindex or
+@noindent
+The @option{-s} option tells @command{af} that this is a search
+operation.  The @option{-q} option specifies a Boolean search
+@dfn{query}, which represents what you are searching for.  The entire
+query is enclosed between two apostrophes so that the UNIX shell will
+not modify its contents.  The special characters, @samp{&} and
+@samp{|}, are Boolean operators meaning `@dfn{and}' and `@dfn{or}'
+respectively.  In other words, the above query means, ``Find all
+documents that contain the word, @samp{cat}, and that also contain
+either @samp{dog} or @samp{mouse}.''  Note that these words are
+`@dfn{case-insensitive}', meaning that @samp{cat}, @samp{CAT}, and
+@samp{caT} are interchangeable.
+
+The command returns a list of matching document references, each one
+taking the form:
+
+@example
+score dbname docid parent filename begin end
+@end example
+
+@noindent
+where @samp{score} is a relevance score, @samp{dbname} is the database
+name, @samp{docid} is an unique number identifying the document within
+the database, @samp{parent} is the @emph{docid} of the document that
+``contains'' this document (or 0 if no such relationship exists),
+@samp{filename} is the name of the file containing the document, and
+@samp{begin} and @samp{end} are byte offsets indicating the beginning
+and ending of the document within the file.  Often there is a one-to-one
+correspondence between files and documents, in which case the
+@samp{begin} and @samp{end} values may be ignored.  The @samp{dbname}
+value is only useful if one is searching multiple databases at once (for
+example, see @ref{Multiple databases}).
+
+In the above example the words, @samp{cat}, @samp{dog}, and
+@samp{mouse}, are each an individual query @dfn{term}.  When the
+@option{-Q} option is used, Amberfish searches for each query term
+separately and then combines the results according to the Boolean
+operators.  Amberfish also supports a non-Boolean @dfn{free-text}
+query type, which is invoked by using @option{-q} instead of
+@option{-Q}.  It consists of a list of terms separated by spaces and
+no Boolean operators, for example:
+
+@example
+$ af -s -d mydb -q 'cat dog mouse'
+@end example
+
+@noindent
+This is roughly similar to a Boolean query with all the terms joined
+by @samp{or}, such as:
+
+@example
+$ af -s -d mydb -Q 'cat | dog | mouse'
+@end example
+
+@cartouche
+@noindent
+@emph{Note:} The free-text search option (@option{-q}) is not yet
+fully implemented but is planned for an upcoming release.  For now
+please use @option{-Q} when trying the examples in this tutorial.
+@end cartouche
+
+@noindent
+In the next several examples we concentrate on the structure of a
+single query term, with the understanding that terms can be combined
+arbitrarily into Boolean expressions or free-text queries.
+
+
+@spsection{}
+@node Right truncation, Phrases, Searching, Tutorial
+@section Right truncation
+@cindex Right truncation
+
+Amberfish supports @dfn{right truncated} queries such as the
+following:
+
+@example
+$ af -s -d mydb -q 'car*'
+@end example
+
+@noindent
+The query term, @samp{car*}, finds all documents containing the word,
+@samp{car}, @samp{cars}, or @samp{carpet}, or any other word that starts
+with the prefix, @samp{car}.  A term such as @samp{s*} will match any
+word that starts with the letter, @samp{s}, and it may take a while for
+Amberfish to process; not to mention the fact that it is very likely to
+match every document in the database.
+
+
+@spsection{}
+@node Phrases, Multiple documents in a file, Right truncation, Tutorial
+@section Phrases
+@cindex Phrases
+
+To enable phrase searching, the @option{--phrase} option must be given
+to @command{af}, together with @option{-i} and @option{-C}, at the
+time of indexing.
+
+Here is an example of a phrase search:
+
+@example
+$ af -s -d mydb -q '"Dinu Lipatti"'
+@end example
+
+@noindent
+This means, ``Find all documents that contain the phrase, @w{@samp{Dinu
+Lipatti}}.''  (Note that the entire phrase must be enclosed in double
+quotes and that spaces are not significant.)  Amberfish defines a phrase
+in this context as the word, @samp{Dinu}, followed by the word,
+@samp{Lipatti}, with no other words in between the two.  Phrases may
+include more than two words, as in @w{@samp{John Quincy Adams}}; and
+phrase words may be right truncated, for example, @w{@samp{Emil*
+Durkheim}}.
+
+
+@spsection{}
+@node Multiple documents in a file, Fields, Phrases, Tutorial
+@section Multiple documents in a file
+@cindex Multiple documents in a file
+
+A document can consist of an entire file or a portion of a file.
+Amberfish records @samp{begin} and @samp{end} byte offsets for each
+document as demarcation of the document within the file that contains
+it.  By default the whole file is treated as a single document.  For
+example, a file called @file{sample.txt} that is 12000 bytes in size
+will be indexed as a single document with @samp{begin} and @samp{end}
+byte offsets, 0 and 12000, respectively.
+
+The @command{af} tool includes the @option{--split} option as a method
+of instructing Amberfish that the files to be indexed contain multiple
+documents.  The @option{--split} option is used to specify a string
+delimiter that indicates the boundaries between documents in a file.
+For example:
+
+@example
+$ af -i -d mydb -C --split '#####' -v *.txt
+@end example
+
+@noindent
+As the files, @file{*.txt}, are indexed, they are scanned for the
+string, @samp{#####}.  Each instance of @samp{#####} is interpreted as
+the beginning of a new document, and each new document is indexed
+individually.  Note that each instance of @samp{#####} is considered to
+be part of the document that follows it, as opposed to the document that
+precedes it.  If the string delimiter happens to include text, rather
+than merely @samp{#####}, it will (normally) be indexed as text.
+
+The division of files into multiple documents can be verified with
+@w{@command{af -l}} after the files have been added to the database
+(see @ref{Listing database information}).
+
+The @w{@command{af --fetch}} command prints a portion of a file to
+standard output:
+
+@example
+$ af --fetch filename begin end
+@end example
+
+@noindent
+where @samp{filename}, @samp{begin}, and @samp{end} are taken from the
+output of @command{af -s} (see @ref{Searching}) or @command{af -l}
+(see @ref{Listing database information}).
+
+The @option{--split} option does not work with the @code{xml} document
+type, which uses a different method of dividing files into documents
+(see @ref{More about XML}).
+
+
+@spsection{}
+@node Fields, Fields and XML, Multiple documents in a file, Tutorial
+@section Fields
+@cindex Fields
+
+@cindex File formats
+@cindex Document type
+@cindex Document type, default
+@pindex af
+@pindex af, -t
+@pindex text
+Amberfish allows searching on specific fields within documents.
+Support for various file formats is provided by @dfn{document type}
+modules.  The document type must be specified to @command{af} at
+the time of indexing, using the @option{-t} option.  Each document is
+individually associated with a document type as it gets added to the
+database.  The default document type (if none is specified) is
+@code{text}, which does not recognize any fields and therefore does
+not support field searching.
+
+@cindex Searching on fields
+Here is an example of searching on a field:
+
+@pindex af
+@pindex af, -d
+@pindex af, -q
+@example
+$ af -s -d mydb -q 'Title/cat'
+@end example
+
+@noindent
+This means, ``Find all documents that contain the word, @samp{cat}, in
+the @samp{Title} field.''
+
+Unlike search words, field names may be case-sensitive, so that
+@samp{Title} and @samp{title} might be two different fields.  Whether or
+not fields are case-sensitive is determined by the document type.  For
+example, XML elements and attributes are case-sensitive; therefore an
+XML document type would most likely have case-sensitive fields.  As we
+shall discuss later, it is best not to mix document types within a
+single database if those document types have incompatible views about
+case-sensitivity.
+
+
+@spsection{}
+@node Fields and XML, Relevance ranking, Fields, Tutorial
+@section Fields and XML
+@cindex Fields and XML
+
+XML is a good context for exploring field searching.  The following
+examples make use of the @code{xml} document type, which supports
+nested fields (i.e. fields within fields).
+
+Suppose we index the following XML data, contained in a file called,
+@file{jones.xml}:
+
+@example
+<Document>
+   <Author>
+      <Name>
+         <FirstName> Tom </FirstName>
+         <LastName> Jones </LastName>
+      </Name>
+   </Author>
+</Document>
+@end example
+
+@noindent
+with the following command:
+
+@example
+$ af -i -d mydb -C -t xml -v jones.xml
+@end example
+
+@noindent
+The @code{xml} document type views this document as containing two
+words, @samp{Tom} and @samp{Jones}, each located at a certain @dfn{field
+path} within the document:
+
+@example
+/Document/_c/Author/_c/Name/_c/FirstName/_c/Tom
+/Document/_c/Author/_c/Name/_c/LastName/_c/Jones
+@end example
+
+@noindent
+The character, @samp{/}, separates the field names, and in this case
+each field except for @samp{_c} corresponds to an XML element.  (Below
+we shall see an example in which a field corresponds to an XML
+attribute.)  The @samp{_c} is a special field defined by @code{xml} that
+means, ``element content.''  Thus the following search:
+
+@example
+$ af -s -d mydb -q '/Document/_c/Author/_c/Name/_c/LastName/_c/Jones'
+@end example
+
+@noindent
+will return @file{jones.xml} as a matching result.  These queries also
+will return a positive match:
+
+@example
+$ af -s -d mydb -q '/.../Document/_c/Author/_c/Name/_c/LastName/_c/Jones'
+$ af -s -d mydb -q '/.../_c/Author/_c/Name/_c/LastName/_c/Jones'
+$ af -s -d mydb -q '/.../Author/_c/Name/_c/LastName/_c/Jones'
+$ af -s -d mydb -q '/.../_c/Name/_c/LastName/_c/Jones'
+$ af -s -d mydb -q '/.../Name/_c/LastName/_c/Jones'
+$ af -s -d mydb -q '/.../_c/LastName/_c/Jones'
+$ af -s -d mydb -q '/.../LastName/_c/Jones'
+$ af -s -d mydb -q '/.../_c/Jones'
+$ af -s -d mydb -q '/.../Jones'
+$ af -s -d mydb -q 'Jones'
+@end example
+
+@noindent
+The @samp{...} is defined by Amberfish as, ``a sequence of any
+zero or more fields.''  A @samp{/.../} that begins a field path can be
+left out completely.  For example, these two queries yield the same
+results:
+
+@example
+$ af -s -d mydb -q '/.../LastName/_c/Jones'
+$ af -s -d mydb -q 'LastName/_c/Jones'
+@end example
+
+@noindent
+The @samp{...} can be used anywhere within a field path.  For example,
+the following queries match @file{jones.xml}:
+
+@example
+$ af -s -d mydb -q '/Document/_c/Author/_c/Name/.../Jones'
+$ af -s -d mydb -q 'Name/.../LastName/.../Jones'
+@end example
+
+@noindent
+The first of the two examples above will match @samp{Jones} anywhere
+within the author's name, not necessarily only his last name.  The
+second matches only a last name of Jones, but it need not be the author;
+for example, it would match a document containing the following
+fragment:
+
+@example
+<Bibliography>
+   <Reference Type="book">
+      <Title> Text searching the old fashioned way. </Title>
+      <Name>
+         <FirstName> Indiana </FirstName>
+         <LastName> Jones </LastName>
+      </Name>
+   </Reference>
+</Bibliography>
+@end example
+
+@noindent
+Other queries that would match the above fragment:
+
+@example
+$ af -s -d mydb -q 'Reference/_a/Type/book'
+$ af -s -d mydb -q 'Reference/_a/.../book'
+$ af -s -d mydb -q 'Reference/.../book'
+@end example
+
+@noindent
+The @samp{_a} is another special field defined by @code{xml} that means,
+``attribute content.''  Thus @samp{_c} and @samp{_a} allow one to
+distinguish between attribute and element searching if desired.  In
+constructing queries for this document type, it is always necessary to
+specify @samp{_c}, @samp{_a}, or @samp{...}  after an element field name
+and before the next field name or the search word.
+
+Phrase searching with fields is done this way:
+
+@example
+$ af -s -d mydb -q 'Title/.../"text searching"'
+@end example
+
+@noindent
+or in a multiple term expression:
+
+@example
+$ af -s -d mydb -Q 'Title/.../"text searching" &
+                    Name/.../Indiana & Name/.../Jones'
+@end example
+
+
+@spsection{}
+@node Relevance ranking, Multiple databases, Fields and XML, Tutorial
+@section Relevance ranking
+@cindex Relevance ranking
+
+By default, Amberfish attempts to rank search results based on
+relevance to the query.  It computes a score for each document in the
+result set and sorts the results by score.
+
+@ignore
+
+Amberfish provides document scoring and ranking by relevance (based on
+the vector model).  The @option{-score} option instructs
+@command{afsearch} to compute relevance scores, or alternatively
+@option{-os} may be used to sort the documents by score:
+
+@example
+$ afsearch -d mydb -q '"Ludwig van Beethoven"' -score
+$ afsearch -d mydb -q '"Ludwig van Beethoven"' -os
+@end example
+
+@noindent
+In both cases, the score value (rather than the default @samp{0} value)
+is included in the output.
+
+@end ignore
+
+
+@spsection{}
+@node Multiple databases, Listing database information, Relevance ranking, Tutorial
+@section Multiple databases
+@cindex Multiple databases
+
+The @command{af} tool can search multiple databases, for example:
+
+@example
+$ af -s -d patents1978 -d patents1979 -d patents1980 -q 'mousetrap'
+@end example
+
+@noindent
+The query is applied to each of the three databases, @file{patents1978},
+@file{patents1979}, @file{patents1980}, and the results are merged into
+a single result set.
+
+
+@spsection{}
+@node Listing database information, More about XML, Multiple databases, Tutorial
+@section Listing database information
+@cindex Listing database information
+
+
+The @command{af} tool can be used to list information about an existing
+database.  The @option{-l} option lists the documents contained in a
+database:
+
+@example
+$ af -l -d mydb
+@end example
+
+@noindent
+Each line of output takes the form:
+
+@example
+docid parent filename begin end doctype
+@end example
+
+@noindent
+where @samp{docid} is an unique number identifying the document within
+the database, @samp{parent} is the @emph{docid} of the document that
+``contains'' this document (or 0 if no such relationship exists),
+@samp{filename} is the name of the file containing the document,
+@samp{begin} and @samp{end} are byte offsets indicating the beginning
+and ending of the document within the file, and @samp{doctype} is the
+name of the document type associated with the document.
+
+@ignore
+
+The @option{--list-fields} option is used to list the names of all
+fields known to the database:
+
+@example
+$ af --list-fields -d mydb
+@end example
+
+This list is created during the indexing process, and it is up to the
+document types what field names get included.  A document type may
+determine in advance that a certain set of field names needs to be
+added, or it may discover the fields during the process of parsing the
+documents, or some combination of both.
+
+@end ignore
+
+
+@ignore
+
+@spsection{}
+@node Database status, More about XML, Listing database information, Tutorial
+@section Database status
+@cindex Database status
+
+The @command{af} tool can be used to find out whether a database is
+being modified and is therefore not available:
+
+@example
+$ af --status -d mydb
+@end example
+
+@noindent
+The output is either @samp{status=ready} or @samp{status=not_ready}.
+A status of @samp{not_ready} means either that Amberfish is currently
+modifying the database or that the database was left in an unusable
+state because the Amberfish process ended prematurely.
+
+This feature is sometimes useful for software that calls the Amberfish
+tools to index, manage, or search databases.
+
+@end ignore
+
+
+@spsection{}
+@node More about XML, , Listing database information, Tutorial
+@section More about XML
+@cindex More about XML
+
+The @code{xml} document type contains several features related to the
+structure of XML documents.
+
+Amberfish treats an XML document as an hierarchy of nested documents,
+which can be useful because it increases the resolution of search
+results.  This is regulated with the @command{af} option
+@option{--dlevel}, which limits how many levels of resolution will be
+processed during indexing.  For example:
+
+@example
+$ af -i -d mydb -C -t xml --dlevel 2 -v medline.xml
+@end example
+
+Specifying @option{--dlevel 1} will define each XML file as a single
+document, bounded by the outermost XML element.  (This is the
+default.)  Specifying @option{--dlevel 2} will descend another level
+to the children of the outermost element and consider these to be
+documents nested within the outer documents, etc.  This feature should
+be used very cautiously, because of the dramatic increase in disk
+space and processing time required for progressively higher
+@option{--dlevel} values.
+
+The result of using the @option{--dlevel} option is that search
+results can be very specific.  The results returned by @command{af -s}
+consist of the innermost documents (as allowed by @option{--dlevel})
+that match the query.  The @option{--style} option can be used with
+@command{af -s} to print the lineage of each result document, for
+example:
+
+@example
+$ af -s -d mydb -q 'ArticleTitle/.../"adipose tissue"' --style=lineage
+@end example
+
+@noindent
+This produces an indented hierarchy of ``ancestor'' documents above each
+result document.
+
+
+@ignore
+
+
+@node MIT License, , More about XML, Top
+@appendix MIT License
+@cindex MIT License
+
+Amberfish is distributed under the terms of the MIT License.
+
+@sp 1
+
+@verbatim
+The MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+``Software''), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+@end verbatim
+
+
+@node , , More about XML, Top
+@appendix
+@cindex
+
+
+
+
+@node Advanced topics, Reference, Tutorial, Top
+@chapter Advanced topics
+@cindex Advanced topics
+
+
+@node Reference, Error messages, Advanced topics, Top
+@chapter Reference
+@cindex Reference
+
+@menu
+* Tools::  
+* CGI web interface::                 
+* Document types::                 
+@end menu
+
+
+@node Tools, CGI web interface, Reference, Reference
+@section Tools
+@cindex Tools
+
+@menu
+* af::  
+@end menu
+
+
+@node af, , , Tools
+@subsection af
+@pindex af
+
+
+@node CGI web interface, Document types, Tools, Reference
+@section CGI web interface
+@cindex CGI web interface
+
+.
+
+
+@node Document types, , CGI web interface, Reference
+@section Document types
+@cindex Document types
+
+.
+
+
+@node Error messages, Notes for Isearch users, Reference, Top
+@appendix Error messages
+@cindex Error messages
+
+
+@node Notes for Isearch users, Index, Error messages, Top
+@appendix Notes for Isearch users
+@cindex Notes for Isearch users
+
+
+@node Index,  , Notes for Isearch users, Top
+@unnumbered Index
+
+@printindex cp
+
+
+@end ignore
+
+
+@bye
+
+@c Local Variables: ***
+@c mode: TeXinfo ***
+@c End: ***

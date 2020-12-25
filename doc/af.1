@@ -1,0 +1,261 @@
+.TH AF 1 "" "" "Amberfish"
+
+.SH NAME
+
+af \- Amberfish text retrieval software
+
+.SH SYNOPSIS
+
+.B af [-i]
+.BI [ options ]
+.BI [ file
+.IB ... ]
+.br
+.B af [-s]
+.BI [ options ]
+.br
+.B af [-L]
+.BI [ options ]
+.br
+.B af [-l]
+.BI [ options ]
+.br
+.B af [--fetch]
+.BI [ file ]
+.BI [ begin ]
+.BI [ end ]
+.br
+.B af [--version]
+
+.SH DESCRIPTION
+
+The program
+.B af
+is a text-based interface to Amberfish functions for indexing and
+searching documents.  A simple indexing example would look something
+like:
+
+af -iCv -d mydb *.txt
+
+This creates a new database, mydb, containing an index to the set of
+files, *.txt.  To enable faster searching, an optional "linearize"
+step can be done (this can take a long time to run):
+
+af -L -d mydb
+
+Here is a typical search command:
+
+af -s -d mydb -Q 'cat & (dog | mouse)'
+
+.SH COMMAND OPTIONS
+
+Only one of these options can be used at a time.
+
+.TP
+.B -i, --index
+Index documents (either
+.I file ...
+or specified via standard input if
+.B -F
+is used).
+
+.TP
+.B -s, --search
+Search an indexed database.
+
+.TP
+.B -L, --linearize
+Linearize an indexed database.  Linearizing is an optional step that
+can be done after indexing.  The advantages of linearizing are that it
+reduces searching time and slightly reduces the size of the index
+files.  The disadvantages are that the linearizing process is very
+slow, especially when used on large databases, and it prevents any
+additional documents from being added to the database.
+
+.TP
+.B -l, --list
+List the documents contained in a database.
+
+.TP
+.B --fetch
+Output a portion of a file.  This command takes no other options.  The
+file name
+.IR file ,
+starting offset
+.IR begin ,
+and ending offset
+.I end
+are specified at the end of the line.
+
+.TP
+.B --version
+Print the
+.B af
+version number.
+
+.SH GENERAL OPTIONS
+
+These options are generally available with all command options.
+
+.TP
+.BI "-d, --db " dbname
+Use
+.I dbname
+as the database name.  With some command options such as
+.BR -s ,
+this option can be supplied multiple times to specify multiple
+databases.
+
+.TP
+.B -v, --verbose
+Show verbose output.  This option can be supplied multiple times to
+increase verbosity.
+
+.TP
+.B -D, --debug
+Show extremely verbose (debugging) output.  Using this option once is
+equivalent to
+.BR -vvvvv ,
+and it can be supplied multiple times to increase verbosity further.
+
+.SH INDEX OPTIONS
+
+The following options can only be used together with the indexing
+.RB ( -i )
+command.
+
+.TP
+.B -C, --create
+Create a new database, overwriting any existing one with the same
+name.
+
+.TP
+.BI "-m, --memory " maximum
+Set the maximum amount of memory in megabytes to use for indexing.
+More memory speeds up indexing.
+
+.TP
+.B --phrase
+Enable phrase searching.  This can only be used together with
+.BR -C.
+
+.TP
+.BI "--split " delimiter
+Parse input files into multiple documents at points where the
+specified delimiter string is found.
+
+.TP
+.B -t, --doctype=text, --doctype=xml, --doctype=erc
+Set the document type.  The default is
+.BR text .
+Specifying
+.B xml
+enables functions related to searching and retrieving within nested
+tags in XML documents.  The
+.B erc
+doctype is for kernel metadata in Electronic Resource Citation (ERC)
+format.
+
+.TP
+.BI "--dlevel " level
+The maximum resolution (levels of descent) for retrieval of nested
+documents.  The default value is 1; increasing it lengthens indexing
+time significantly.  Use this for XML instead of
+.B --split
+to subdivide documents.  Note that this only affects resolution of
+elements returned from searches and is unrelated to nested queries
+which have much higher (fixed) resolution.
+
+.TP
+.B --no-stem
+Do not perform stemming.  This can only be used together with
+.BR -C.
+Normally, stemming is automatically enabled if Amberfish was compiled
+with the stemming function.  This option disables stemming even if it
+is available.  Note that the stemming function is not distributed with
+this package and must be installed manually.
+
+.".TP
+.".B --long-words
+."Index words longer than the maximum word length.  Using this option
+."will cause long words to be truncated to the maximum word length, and
+."they can be matched by right-truncated query terms.  By default, such
+."words are discarded, i.e. not indexed at all.
+
+.TP
+.B -F
+Read list of documents to be indexed from standard input, rather than
+from the end of the command line.
+
+.SH SEARCH OPTIONS
+
+The following options can only be used together with the searching
+.RB ( -s )
+command.
+
+.TP
+.BI "-Q, --query-boolean " query_string
+Search for the specified Boolean query string.
+
+.TP
+.BI "-n, --numhits " x
+Output a maximum of
+.I x
+results.
+
+.TP
+.BI "--skiphits " x
+Do not output the first
+.I x
+results.
+
+.TP
+.B --totalhits
+Output the total number of results.
+
+.TP
+.B --style=list, --style=lineage, --style=trec
+Set style of printed result sets.  The default is
+.BR list .
+Use the
+.B lineage
+style with XML to see hierarchical results.  For the
+.B trec
+style, it is assumed that the indexed file names are the document
+numbers and that
+.B --skiphits
+is not used (because rank always starts at 1).
+
+.TP
+.BI "--trec-tag " run_tag
+Output TREC results with the specified run tag.  (This is to be used
+with
+.BR --style=trec .)
+
+.TP
+.BI "--trec-topic " topic_number
+Output TREC results with the specified topic number.  (This is to be
+used with
+.BR --style=trec .)
+
+.SH LINEARIZE OPTIONS
+
+The following options can only be used together with the linearize
+.RB ( -L )
+command.
+
+.TP
+.BI "-m, --memory " maximum
+Set the maximum amount of memory in megabytes to use for linearizing.
+More memory speeds up linearizing.
+
+.TP
+.B --no-linear-buffer
+Do not use a memory buffer to speed up linearizing.  This option will
+be removed once the linearization buffer code proves to be reliable.
+
+.SH AUTHOR
+
+Nassib Nassar; see http://www.etymon.com/ for updates.
+
+Copyright (C) 1999-2004 Etymon Systems, Inc.

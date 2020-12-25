@@ -1,0 +1,46 @@
+.TH AFCLOSE 3 "" "" "Amberfish"
+
+.SH NAME
+
+afclose \- close a database
+
+.SH SYNOPSIS
+
+.B #include "af.h"
+
+.B int afclose(const Afclose *r, Afclose_r *rr);
+
+.SH DESCRIPTION
+
+The
+.B afclose
+function closes a database, writing out any buffered data.
+
+The argument
+.I r
+specifies a set of options defined by the following structure:
+
+.nf
+typedef struct {
+	Uint2 dbid;
+} Afclose;
+.fi
+
+The
+.I dbid
+option specifies the descriptor of the database to be closed.
+
+.SH RETURN VALUE
+
+This function returns 0 if it exited normally.  If an error occurred,
+it returns -1 and
+.I aferrno
+is set.
+
+The structure pointed to by
+.I rr
+is not used.
+
+.SH ERRORS
+
+This function returns only "core" errors.

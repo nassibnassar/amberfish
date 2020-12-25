@@ -1,0 +1,71 @@
+
+#ifndef _AF_CONFIG_H
+#define _AF_CONFIG_H
+
+#include "version.h"
+
+#define inline __inline__
+
+#undef SIZEOF_INT
+#undef SIZEOF_LONG_INT
+#undef SIZEOF_SHORT_INT
+#undef ETYMON_AF_XML
+#undef ETYMON_AF_GSOAP
+#undef HAVE_STEMMER
+
+typedef char Int1;
+typedef unsigned char Uint1;
+
+#if (SIZEOF_INT == 2)
+	typedef int Int2;
+	typedef unsigned int Uint2;
+#else
+#	if (SIZEOF_SHORT_INT == 2)
+		typedef short int Int2;
+		typedef unsigned short int Uint2;
+#	endif
+#endif
+
+#if (SIZEOF_INT == 4)
+	typedef int Int4;
+	typedef unsigned int Uint4;
+#else
+#	if (SIZEOF_LONG_INT == 4)
+		typedef long int Int4;
+		typedef unsigned long int Uint4;
+#	endif
+#endif
+
+/*
+typedef Int1 int1;
+typedef Uint1 uint1;
+typedef Int2 int2;
+typedef Uint2 uint2;
+typedef Int4 int4;
+typedef Uint4 uint4;
+*/
+
+typedef unsigned char Afchar;
+
+/* Old 64-bit file system support */
+#ifdef O_LARGEFILE
+#	define ETYMON_AF_O_LARGEFILE O_LARGEFILE
+#	define etymon_af_lseek(A, B, C)  lseek64(A, B, C)
+#	define etymon_af_fstat(A, B)  fstat64(A, B)
+/* #define etymon_af_ftruncate(A, B)  ftruncate64(A, B) */
+#	define etymon_af_readdir(A)  readdir64(A)
+#	define etymon_af_off_t off64_t
+	typedef struct stat64  ETYMON_AF_STAT;
+	typedef struct dirent64  ETYMON_AF_DIRENT;
+#else
+#	define ETYMON_AF_O_LARGEFILE (0)
+#	define etymon_af_lseek(A, B, C)  lseek(A, B, C)
+#	define etymon_af_fstat(A, B)  fstat(A, B)
+/* #define etymon_af_ftruncate(A, B)  ftruncate(A, B) */
+#	define etymon_af_readdir(A)  readdir(A)
+#	define etymon_af_off_t off_t
+	typedef struct stat  ETYMON_AF_STAT;
+	typedef struct dirent  ETYMON_AF_DIRENT;
+#endif
+
+#endif

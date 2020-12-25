@@ -1,0 +1,16 @@
+autom4te.cache/
+confdefs.h
+config.log
+config.status
+configure
+doc/Makefile
+doc/*.gz
+doc/version.texi
+src/Makefile
+src/af
+src/config.h
+src/version.h
+*.a
+*.d
+*.o
+

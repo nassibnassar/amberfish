@@ -1,0 +1,145 @@
+.TH AFSEARCH 3 "" "" "Amberfish"
+
+.SH NAME
+
+afsearch \- query a set of databases
+
+.SH SYNOPSIS
+
+.B #include "af.h"
+
+.B int afsearch(const Afsearch *r, Afsearch_r *rr);
+
+.SH DESCRIPTION
+
+The
+.B afsearch
+function searches one or more databases and returns an unordered list
+of resultant documents.
+
+The argument
+.I r
+specifies a set of options defined by the following structure:
+
+.nf
+typedef struct {
+	Uint2 *dbid;
+	int dbidn;
+	Afchar *query;
+	int qtype;
+	int score;
+} Afsearch;
+.fi
+
+The
+.I dbid
+option specifies an array of databases to be searched.  The databases
+are referred to by their database descriptors, as returned by
+.BR afopen (3).
+
+The
+.I dbidn
+option specifies how many databases are in the array
+.IR dbid .
+
+The
+.I query
+option specifies the query string to be applied in the search.
+
+The
+.I qtype
+option describes the query type used in
+.IR query .
+Currently there is only one query type supported:
+
+.TP
+.B AFQUERYBOOLEAN
+This is the standard Boolean query type.
+
+.PP
+The
+.I score
+option specifies how relevance scores should be calculated:
+
+.TP
+.B AFNOSCORE
+No score is calculated.  All score values will be set to 0.
+
+.TP
+.B AFSCOREDEFAULT
+Use the default similarity function.
+
+.SH RETURN VALUE
+
+This function returns 0 if it exited normally.  If an error occurred,
+it returns -1 and
+.I aferrno
+is set.
+
+If the function exited normally, the structure pointed to by
+.I rr
+is filled in with the following values:
+
+.nf
+typedef struct {
+	Afresult *result;
+	int resultn;
+} Afsearch_r;
+.fi
+
+The
+.I result
+value is an array of results, each corresponding to a unique
+document that matched the query.
+
+The
+.I resultn
+value is the number of elements in
+.IR result .
+
+Each element of
+.I result
+is of the following type:
+
+.nf
+typedef struct {
+	Uint4 docid;
+	Uint2 score;
+	Uint2 dbid;
+} Afresult;
+.fi
+
+The
+.I docid
+is the document identifier.
+
+The
+.I score
+is the computed relevance score, normally a value in the range, 0 to
+10000.
+
+The
+.I dbid
+is the descriptor of the database containing the document.
+
+Additional processing of results is provided by
+.BR afsortscore (3),
+.BR afsortdocid (3),
+and
+.BR afgetresultmd(3).
+
+.SH ERRORS
+
+In addition to the set of "core" errors, this function can return:
+
+.TP
+.B AFETERMLEN
+A query term exceeded the maximum number of characters allowed.
+
+.TP
+.B AFEQUERYNEST
+The query was too highly nested.
+
+.TP
+.B AFEQUERYSYN
+The query contained an error in syntax.

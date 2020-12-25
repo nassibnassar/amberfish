@@ -1,0 +1,39 @@
+.TH AFSORTSCORE 3 "" "" "Amberfish"
+
+.SH NAME
+
+afsortscore \- sort search results by score
+
+.SH SYNOPSIS
+
+.B #include "af.h"
+
+.B int afsortscore(Afresult *result, int resultn);
+
+.SH DESCRIPTION
+
+The
+.B afsortscore
+function sorts results returned from 
+.BR afsearch (3),
+putting documents with the highest score at the top of the list.
+
+The argument
+.I result
+specifies the array of results to be sorted.
+
+The argument
+.I resultn
+specifies the number of elements in
+.IR result .
+
+.SH RETURN VALUE
+
+This function returns 0 if it exited normally.  If an error occurred,
+it returns -1 and
+.I aferrno
+is set.
+
+.SH ERRORS
+
+This function returns only "core" errors.

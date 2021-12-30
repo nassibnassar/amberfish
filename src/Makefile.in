@@ -7,9 +7,6 @@ DEBUG =		-g
 LARGEFILE =	-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 UMLS = -DUMLS
 
-# GIRS server (afd) is experimental and not compiled by default.
-#GIRS =		/usr/local/girtools/girs
-
 FLAGS =		-Wall -Wno-unused-variable -Wno-unused-function \
 		${DEBUG} ${OPT} ${LARGEFILE} ${UMLS} -I${GIRS}/src
 CFLAGS =	-std=c89 ${FLAGS}
@@ -20,9 +17,6 @@ CC =		@CC@
 CXX =		@CXX@
 
 LIBS =		@LDFLAGS@ @LIBS@ -L. -laf -lm
-LIBGSOAP =	@LIBGSOAP@
-GSOAPCL =	soapC.o soapClient.o
-GSOAPCLIENT =	@GSOAPCLIENT@
 prefix =	@prefix@
 exec_prefix =	@exec_prefix@
 PREFIXBIN =	${DESTDIR}@bindir@
@@ -33,9 +27,6 @@ LIBOBJ =	log.o open.o util.o lock.o search.o fdef.o index.o \
 		text.o xml.o xml_test.o erc.o \
 		err.o info.o linear.o linbuf.o scan.o
 BINOBJ =	afmain.o af.o
-GSOAPO =	soapC.o soapClient.o soapClientLib.o soapServer.o soapServerLib.o \
-		afdmain.o afd.o
-GSOAPOBJ =	@GSOAPOBJ@
 
 # Be careful about changing BIN; see the uninstall target below first.
 BIN =		af @BIN@
@@ -58,19 +49,12 @@ all: ${BIN}
 
 -include $(LIBOBJ:.o=.d)
 -include $(BINOBJ:.o=.d)
-@GSOAPINC@
 
-af: ${LIBAF} afmain.o af.o ${GSOAPCLIENT}
-	${CXX} -o af afmain.o af.o ${GSOAPCLIENT} ${LIBS} ${LIBGSOAP}
-
-afd: ${LIBAF} afdmain.o afd.o soapC.o soapServer.o
-	${CXX} -o afd afdmain.o afd.o soapC.o soapServer.o ${LIBS} ${LIBGSOAP}
+af: ${LIBAF} afmain.o af.o
+	${CXX} -o af afmain.o af.o ${LIBS}
 
 ${LIBAF}: ${LIBOBJ}
 	ar rs ${LIBAF} ${LIBOBJ}
-
-stubs:
-	soapcpp2 afw.h
 
 strip:
 	strip af
@@ -88,7 +72,7 @@ uninstall:
 
 clean:
 	rm -f ${BIN} \
-		afmain.o af.o afdmain.o afd.o soapC.o soapServer.o \
+		afmain.o af.o \
 		${BINOBJ} ${LIBOBJ} ${LIBAF}
 
 distclean:
